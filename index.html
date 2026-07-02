@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ADCOM | Hub de informes de clientes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #ffc000;
+      --black: #090909;
+      --ink: #222;
+      --muted: #6f6f6f;
+      --soft: #f7f7f7;
+      --line: #e8e8e8;
+      --white: #fff;
+      --radius: 8px;
+      --shadow: 0 18px 46px rgba(0,0,0,.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Poppins", Arial, sans-serif;
+      background: var(--white);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      background: var(--white);
+    }
+
+    .main {
+      width: 100%;
+      padding: 32px clamp(18px, 4vw, 54px) 42px;
+      min-width: 0;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 22px;
+      align-items: flex-start;
+      margin-bottom: 26px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 24px;
+    }
+
+    .topbar h2 {
+      font-size: clamp(2rem, 4vw, 4.3rem);
+      line-height: .96;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      max-width: 820px;
+      color: var(--black);
+    }
+
+    .view-toggle {
+      display: inline-grid;
+      grid-template-columns: repeat(2, 1fr);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      flex: 0 0 auto;
+      background: var(--soft);
+    }
+
+    .view-toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--black);
+      padding: 10px 16px;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .view-toggle button.active {
+      background: var(--black);
+      color: var(--yellow);
+    }
+
+    .filters {
+      background: var(--white);
+      color: var(--black);
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--yellow);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: grid;
+      grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(150px, 1fr)) auto;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 22px;
+      box-shadow: 0 18px 42px rgba(0,0,0,.055);
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--black);
+      border-radius: 6px;
+      padding: 11px 12px;
+      outline: none;
+      font-weight: 600;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--yellow);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(255,192,0,.18);
+    }
+
+    .reset-btn {
+      border: 0;
+      background: var(--black);
+      color: var(--yellow);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 12px 24px rgba(0,0,0,.12);
+    }
+
+    .category-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 22px;
+      padding-bottom: 2px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--black);
+      border-radius: 999px;
+      padding: 10px 15px;
+      font-size: .78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+
+    .chip.active,
+    .chip:hover {
+      background: var(--black);
+      color: var(--yellow);
+      border-color: var(--black);
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .report-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: transform .18s, box-shadow .18s, border-color .18s;
+    }
+
+    .report-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 6px;
+      background: var(--yellow);
+      z-index: 1;
+    }
+
+    .report-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+      border-color: #d7d7d7;
+    }
+
+    .card-top {
+      background:
+        linear-gradient(135deg, rgba(255,192,0,.16), transparent 48%),
+        var(--soft);
+      border-bottom: 1px solid var(--line);
+      padding: 22px 16px 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .tag {
+      display: inline-flex;
+      width: max-content;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--black);
+      padding: 5px 9px;
+      font-size: .68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .tag.primary {
+      background: var(--yellow);
+      border-color: var(--yellow);
+    }
+
+    .tag.dark {
+      background: var(--black);
+      border-color: var(--black);
+      color: var(--yellow);
+    }
+
+    .report-card h3 {
+      color: var(--black);
+      font-size: 1.18rem;
+      line-height: 1.16;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .card-body {
+      padding: 18px 16px;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .report-card p {
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .meta-grid {
+      margin-top: auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+      gap: 10px;
+    }
+
+    .meta-grid span {
+      display: block;
+      color: var(--muted);
+      font-size: .66rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .meta-grid strong {
+      display: block;
+      color: var(--black);
+      font-size: .84rem;
+      margin-top: 2px;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 16px 18px;
+    }
+
+    .card-actions a,
+    .card-actions button,
+    .detail-actions a {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--black);
+      border-radius: 6px;
+      padding: 10px 12px;
+      text-decoration: none;
+      font-size: .76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .18s, background .18s, color .18s, border-color .18s;
+    }
+
+    .card-actions a:hover,
+    .card-actions button:hover,
+    .detail-actions a:hover {
+      transform: translateY(-1px);
+      border-color: var(--black);
+    }
+
+    .table-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .card-actions a.primary,
+    .detail-actions a.primary {
+      background: var(--black);
+      color: var(--yellow);
+      border-color: var(--black);
+    }
+
+    .detail {
+      position: sticky;
+      top: 22px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--soft);
+      overflow: hidden;
+    }
+
+    .detail-head {
+      background: var(--black);
+      color: var(--white);
+      padding: 20px;
+      border-left: 7px solid var(--yellow);
+    }
+
+    .detail-head span {
+      color: var(--yellow);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .detail-head h3 {
+      color: var(--white);
+      margin-top: 8px;
+      font-size: 1.45rem;
+      line-height: 1.12;
+    }
+
+    .detail-body {
+      padding: 20px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .detail-body p {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 105px 1fr;
+      gap: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      font-size: .84rem;
+    }
+
+    .detail-row span {
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: .66rem;
+      letter-spacing: .06em;
+    }
+
+    .detail-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .table-view {
+      display: none;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: auto;
+      background: var(--white);
+    }
+
+    .table-view.active { display: block; }
+
+    table {
+      width: 100%;
+      min-width: 980px;
+      border-collapse: collapse;
+    }
+
+    th {
+      background: var(--black);
+      color: var(--yellow);
+      padding: 13px 14px;
+      text-align: left;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink);
+      font-size: .84rem;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: var(--soft);
+    }
+
+    .empty {
+      border: 1px dashed #cfcfcf;
+      border-radius: var(--radius);
+      padding: 32px;
+      color: var(--muted);
+      background: var(--soft);
+      text-align: center;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1180px) {
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .detail {
+        position: relative;
+        top: 0;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 840px) {
+      .topbar,
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        display: grid;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .main {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .topbar h2 {
+        font-size: 2.05rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h2>Clientes e informes disponibles</h2>
+        </div>
+        <div class="view-toggle" aria-label="Cambiar vista">
+          <button class="active" type="button" data-view="cards">Cards</button>
+          <button type="button" data-view="table">Tabla</button>
+        </div>
+      </header>
+
+      <section class="filters" aria-label="Filtros">
+        <div class="field">
+          <label for="searchInput">Buscar</label>
+          <input id="searchInput" type="search" placeholder="Cliente, informe, canal o resumen" />
+        </div>
+        <div class="field">
+          <label for="clientFilter">Cliente</label>
+          <select id="clientFilter"></select>
+        </div>
+        <div class="field">
+          <label for="channelFilter">Fuente</label>
+          <select id="channelFilter"></select>
+        </div>
+        <div class="field">
+          <label for="priorityFilter">Cobertura</label>
+          <select id="priorityFilter">
+            <option value="all">Todas</option>
+            <option value="Alta">3 fuentes</option>
+            <option value="Media">2 fuentes</option>
+            <option value="Base">1 fuente</option>
+          </select>
+        </div>
+        <button class="reset-btn" type="button" id="resetBtn">Limpiar</button>
+      </section>
+
+      <nav class="category-strip" id="categoryStrip" aria-label="Categorías"></nav>
+
+      <section class="content-layout" id="cardsView">
+        <div>
+          <div class="cards" id="cardsContainer"></div>
+          <div class="empty" id="emptyState" hidden>No hay informes para los filtros actuales.</div>
+        </div>
+        <aside class="detail" id="detailPanel"></aside>
+      </section>
+
+      <section class="table-view" id="tableView">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Informe</th>
+              <th>Categoría</th>
+              <th>Fuentes</th>
+              <th>Estado</th>
+              <th>Cobertura</th>
+              <th>Links</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const defaultReports = [
+      createReport("EDUCACIÓN", "CATOLICA", "", "https://analytics.zoho.com/open-view/2744088000002198621/a07d1f93535107b089b9c86724441ee1", "https://adcom-forecast.github.io/catolica/tablero_catolica"),
+      createReport("EDUCACIÓN", "COMPENSAR", "", "https://analytics.zoho.com/open-view/1211929000019396788/040ad19314c2753237d02fdef416eca1", "https://adcom-forecast.github.io/compensar/tablero_compensar"),
+      createReport("EDUCACIÓN", "CORPAS", "", "https://analytics.zoho.com/open-view/1211929000017366872/686921d0a009d0dbd7db42b366abb21c", "https://adcom-forecast.github.io/corpas/tablero-corpas"),
+      createReport("EDUCACIÓN", "UAN", "", "https://analytics.zoho.com/open-view/3178845000000121045/3d629fe8810c64f5852620c2a3d6fa5c", "https://adcom-forecast.github.io/uan/tablero-uan"),
+      createReport("EDUCACIÓN", "EIA PREGRADOS", "", "https://analytics.zoho.com/open-view/3070470000000674072/f7518f25699ddbefc929764d9a87877d", "https://adcom-forecast.github.io/eia/tablero-eia"),
+      createReport("EDUCACIÓN", "EIA POSGRADO", "", "https://analytics.zoho.com/open-view/3070470000000498075/f580a5af67583e6157d032e9e8030377", "https://adcom-forecast.github.io/eia/tablero-eia"),
+      createReport("EDUCACIÓN", "La Salle Pereira", "https://datastudio.google.com/u/0/reporting/fe4854f2-c400-429d-b6b2-8a4846d5b5b2", "", ""),
+      createReport("EDUCACIÓN", "UPB EVENTOS", "", "https://analytics.zoho.com/open-view/1211929000030861766/8955de9984d8ae978a67084cdb09aaddbdb4c560dfe39d9024811ceb85f5a18f", ""),
+      createReport("EDUCACIÓN", "UPB OPEN", "", "https://analytics.zoho.com/open-view/1211929000030143393/99c9a1aa7b6a756d6064413b28b7e435d3f41f88cb71515d3eea76ae86c689b7", ""),
+      createReport("EDUCACIÓN", "UPB VIRTUAL", "", "https://analytics.zoho.com/open-view/1211929000029242750/0f8fdf9a07dd721f32609d81741898dad350de416a7ecfe5aa38e6c458ace7df", ""),
+      createReport("APUESTAS", "BALOTO", "https://datastudio.google.com/u/0/reporting/91ad73cb-89a0-4b4a-85c2-92c51ef5ff8f/page/FknCF", "", ""),
+      createReport("APUESTAS", "MEGALOTO", "https://datastudio.google.com/u/0/reporting/2f49e51d-0165-493c-9fce-70c58fc4f898/page/FLuaF", "", ""),
+      createReport("APUESTAS", "GENIUS", "https://datastudio.google.com/u/0/reporting/2e043525-486a-42ec-94ba-a58e5b753c52/page/FknCF", "", ""),
+      createReport("APUESTAS", "SUSUERTE", "https://datastudio.google.com/u/0/reporting/12f3355b-3e5b-4acb-a3d0-adc094a3bc43/page/p_fa1b22npqd", "", ""),
+      createReport("AWARENESS", "HUEVOS ORO", "https://datastudio.google.com/u/0/reporting/57c09853-9372-46e8-a3e9-d7a907f72652/page/p_0w91g3mwud", "", ""),
+      createReport("EDUCACIÓN", "CESDE EMPRESAS", "https://datastudio.google.com/u/0/reporting/d8ad7dba-e2cb-40b0-ad17-60f98d1fbea9", "https://analytics.zoho.com/open-view/2393306000014331119/e691ca5b127b651ba738265233cfa9e4", "https://danieladcom98.github.io/Cesde/"),
+      createReport("EDUCACIÓN", "CESDE TÉCNICOS", "https://datastudio.google.com/u/0/reporting/86a9c0b3-263b-4b12-b31b-27f9852006cc/page/p_uzu3h4jqqd", "https://analytics.zoho.com/open-view/2393306000015988262/7d921b270e810411994c8744cf0c6f37", "https://danieladcom98.github.io/Cesde/"),
+      createReport("EDUCACIÓN", "WESTFIELD", "", "https://analytics.zoho.com/open-view/2829394000000410174/ab7baa3f1ec8b1c13bde05e997463fcc", "https://danieladcom98.github.io/Westfield/"),
+      createReport("APUESTAS", "BETPLAY", "https://datastudio.google.com/u/0/reporting/3303a875-bf8d-4b66-b77c-9f0e7feebd4e/page/p_h441y3kc9c", "", "https://danieladcom98.github.io/Betplay/"),
+      createReport("APUESTAS", "BETPLAY ES GANA", "https://datastudio.google.com/u/0/reporting/905aa9a0-0f73-4681-b863-d377509330b1/page/p_tag3k5l8fd", "", ""),
+      createReport("APUESTAS", "REDITOS", "https://datastudio.google.com/u/0/reporting/d35fcf76-8790-44e4-a5e7-eedaf9944e48/page/p_j3blm5f52d", "", ""),
+      createReport("APUESTAS", "LOTI", "https://datastudio.google.com/u/0/reporting/a7854f6f-4ea7-4d63-8a08-809b5bd0a4d7/page/p_tag3k5l8fd", "", ""),
+      createReport("APUESTAS", "ASTROBET", "https://datastudio.google.com/u/0/reporting/61f4a38e-68c0-43ac-940e-3b011b64b2d1/page/p_tag3k5l8fd", "", ""),
+      createReport("APUESTAS", "YAJUEGO", "https://datastudio.google.com/u/0/reporting/a93f572c-c153-4c40-b649-d703748c97f2/page/p_7y0a87d3pd", "", "https://danieladcom98.github.io/Yajuego/"),
+      createReport("APUESTAS", "RIS", "https://datastudio.google.com/u/0/reporting/60560c63-b78a-4e30-a0a8-1d5997f407c4/page/p_zu0jutvzrd", "", ""),
+      createReport("AWARENESS", "LA SANTE", "https://datastudio.google.com/u/0/reporting/52719299-04fb-4d08-8595-d574c1bb8825/page/p_6knbkef5dd", "", ""),
+      createReport("AWARENESS", "COLGAS", "https://datastudio.google.com/u/0/reporting/521a9696-d3cd-4762-8b0f-0d2d2457d82c", "", "")
+    ];
+
+    function createReport(category, client, looker, zoho, html) {
+      const links = [
+        { label: "Looker", url: looker },
+        { label: "Zoho", url: zoho },
+        { label: "HTML", url: html }
+      ].filter((link) => link.url);
+      const sourceNames = links.map((link) => link.label);
+      const coverage = links.length === 3 ? "Alta" : links.length === 2 ? "Media" : "Base";
+
+      return {
+        client,
+        title: `Tableros e informes ${client}`,
+        category,
+        channel: sourceNames.join(" + ") || "Sin fuente",
+        status: links.length ? "Disponible" : "Pendiente",
+        date: "2026-07-02",
+        priority: coverage,
+        summary: `${client} tiene ${links.length} acceso${links.length === 1 ? "" : "s"} disponible${links.length === 1 ? "" : "s"}: ${sourceNames.join(", ") || "sin enlaces activos"}.`,
+        url: links[0]?.url || "#",
+        links
+      };
+    }
+
+    let reports = [...defaultReports];
+    let filters = {
+      search: "",
+      client: "all",
+      category: "all",
+      channel: "all",
+      priority: "all"
+    };
+    let selectedId = 0;
+
+    const cardsContainer = document.querySelector("#cardsContainer");
+    const tableBody = document.querySelector("#tableBody");
+    const detailPanel = document.querySelector("#detailPanel");
+    const categoryStrip = document.querySelector("#categoryStrip");
+    const emptyState = document.querySelector("#emptyState");
+    const cardsView = document.querySelector("#cardsView");
+    const tableView = document.querySelector("#tableView");
+
+    const normalize = (value) => String(value || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const unique = (key) => [...new Set(reports.map((item) => item[key]).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    const reportId = (report) => `${report.client}-${report.title}-${report.category}`;
+
+    function init() {
+      populateSelect("clientFilter", "client", "Todos los clientes");
+      populateSourceSelect();
+      renderCategoryStrip();
+      bindEvents();
+      render();
+    }
+
+    function populateSelect(id, key, label) {
+      const select = document.querySelector(`#${id}`);
+      select.innerHTML = `<option value="all">${label}</option>`;
+      unique(key).forEach((value) => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+      select.value = filters[key] || "all";
+    }
+
+    function populateSourceSelect() {
+      const select = document.querySelector("#channelFilter");
+      select.innerHTML = `
+        <option value="all">Todas las fuentes</option>
+        <option value="Looker">Looker</option>
+        <option value="Zoho">Zoho</option>
+        <option value="HTML">HTML</option>
+      `;
+      select.value = filters.channel || "all";
+    }
+
+    function renderCategoryStrip() {
+      const categories = unique("category");
+      categoryStrip.innerHTML = "";
+      [{ label: "Todas", value: "all" }, ...categories.map((cat) => ({ label: cat, value: cat }))].forEach((cat) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `chip${filters.category === cat.value ? " active" : ""}`;
+        button.textContent = cat.label;
+        button.addEventListener("click", () => {
+          filters.category = cat.value;
+          renderCategoryStrip();
+          render();
+        });
+        categoryStrip.appendChild(button);
+      });
+    }
+
+    function bindEvents() {
+      document.querySelector("#searchInput").addEventListener("input", (event) => {
+        filters.search = event.target.value;
+        render();
+      });
+      document.querySelector("#clientFilter").addEventListener("change", (event) => {
+        filters.client = event.target.value;
+        render();
+      });
+      document.querySelector("#channelFilter").addEventListener("change", (event) => {
+        filters.channel = event.target.value;
+        render();
+      });
+      document.querySelector("#priorityFilter").addEventListener("change", (event) => {
+        filters.priority = event.target.value;
+        render();
+      });
+      document.querySelector("#resetBtn").addEventListener("click", resetFilters);
+      document.querySelectorAll("[data-view]").forEach((button) => {
+        button.addEventListener("click", () => setView(button.dataset.view));
+      });
+    }
+
+    function resetFilters() {
+      filters = { search: "", client: "all", category: "all", channel: "all", priority: "all" };
+      document.querySelector("#searchInput").value = "";
+      document.querySelector("#clientFilter").value = "all";
+      document.querySelector("#channelFilter").value = "all";
+      document.querySelector("#priorityFilter").value = "all";
+      renderCategoryStrip();
+      render();
+    }
+
+    function getFilteredReports() {
+      const search = normalize(filters.search);
+      return reports.filter((report) => {
+        const sources = (report.links || []).map((link) => link.label).join(" ");
+        const haystack = normalize(`${report.client} ${report.title} ${report.category} ${report.channel} ${sources} ${report.status} ${report.priority} ${report.summary}`);
+        return (!search || haystack.includes(search))
+          && (filters.client === "all" || report.client === filters.client)
+          && (filters.category === "all" || report.category === filters.category)
+          && (filters.channel === "all" || (report.links || []).some((link) => link.label === filters.channel))
+          && (filters.priority === "all" || report.priority === filters.priority);
+      });
+    }
+
+    function render() {
+      const filtered = getFilteredReports();
+      if (!filtered.some((report) => reportId(report) === selectedId)) {
+        selectedId = filtered[0] ? reportId(filtered[0]) : "";
+      }
+      renderCards(filtered);
+      renderTable(filtered);
+      renderDetail(filtered.find((report) => reportId(report) === selectedId) || filtered[0]);
+    }
+
+    function renderCards(filtered) {
+      cardsContainer.innerHTML = "";
+      emptyState.hidden = filtered.length > 0;
+      filtered.forEach((report) => {
+        const card = document.createElement("article");
+        card.className = "report-card";
+        card.innerHTML = `
+          <div class="card-top">
+            <div class="tag-row">
+              <span class="tag primary">${escapeHtml(report.client)}</span>
+              <span class="tag dark">${escapeHtml(report.category)}</span>
+            </div>
+            <h3>${escapeHtml(report.title)}</h3>
+          </div>
+          <div class="card-body">
+            <p>${escapeHtml(report.summary)}</p>
+            <div class="meta-grid">
+              <div><span>Fuentes</span><strong>${escapeHtml(report.channel)}</strong></div>
+              <div><span>Cobertura</span><strong>${coverageLabel(report.priority)}</strong></div>
+              <div><span>Estado</span><strong>${escapeHtml(report.status)}</strong></div>
+              <div><span>Accesos</span><strong>${(report.links || []).length}</strong></div>
+            </div>
+          </div>
+          <div class="card-actions">
+            <button type="button" data-select="${escapeHtml(reportId(report))}">Detalle</button>
+            ${renderLinkButtons(report.links, true)}
+          </div>
+        `;
+        card.querySelector("[data-select]").addEventListener("click", () => {
+          selectedId = reportId(report);
+          render();
+          detailPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        });
+        cardsContainer.appendChild(card);
+      });
+    }
+
+    function renderTable(filtered) {
+      tableBody.innerHTML = "";
+      filtered.forEach((report) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${escapeHtml(report.client)}</strong></td>
+          <td>${escapeHtml(report.title)}</td>
+          <td>${escapeHtml(report.category)}</td>
+          <td>${escapeHtml(report.channel)}</td>
+          <td>${escapeHtml(report.status)}</td>
+          <td>${coverageLabel(report.priority)}</td>
+          <td><div class="table-links">${renderLinkButtons(report.links, false)}</div></td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function renderDetail(report) {
+      if (!report) {
+        detailPanel.innerHTML = `
+          <div class="detail-head"><span>Detalle</span><h3>Sin selección</h3></div>
+          <div class="detail-body"><p>No hay informes visibles.</p></div>
+        `;
+        return;
+      }
+      detailPanel.innerHTML = `
+        <div class="detail-head">
+          <span>${escapeHtml(report.client)} · ${escapeHtml(report.category)}</span>
+          <h3>${escapeHtml(report.title)}</h3>
+        </div>
+        <div class="detail-body">
+          <p>${escapeHtml(report.summary)}</p>
+          <div class="detail-list">
+            <div class="detail-row"><span>Fuentes</span><strong>${escapeHtml(report.channel)}</strong></div>
+            <div class="detail-row"><span>Estado</span><strong>${escapeHtml(report.status)}</strong></div>
+            <div class="detail-row"><span>Accesos</span><strong>${(report.links || []).length}</strong></div>
+            <div class="detail-row"><span>Cobertura</span><strong>${coverageLabel(report.priority)}</strong></div>
+          </div>
+          <div class="detail-actions">
+            ${renderLinkButtons(report.links, true)}
+            <a href="https://docs.google.com/spreadsheets/d/1oavWtOKhH9AWnYPnRkPnH6-RoGV62YLcFY2Rxd_2CC0/edit?gid=0#gid=0" target="_blank" rel="noopener noreferrer">Ver matriz</a>
+          </div>
+        </div>
+      `;
+    }
+
+    function setView(view) {
+      document.querySelectorAll("[data-view]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.view === view);
+      });
+      const showTable = view === "table";
+      tableView.classList.toggle("active", showTable);
+      cardsView.style.display = showTable ? "none" : "grid";
+    }
+
+    function handleCsvUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const imported = parseCsv(String(reader.result || ""));
+        if (!imported.length) return;
+        reports = imported.map(normalizeImportedReport);
+        filters = { search: "", client: "all", category: "all", channel: "all", priority: "all" };
+        document.querySelector("#searchInput").value = "";
+        populateSelect("clientFilter", "client", "Todos los clientes");
+        populateSourceSelect();
+        renderCategoryStrip();
+        render();
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function parseCsv(csv) {
+      const rows = [];
+      let current = "";
+      let row = [];
+      let inQuotes = false;
+
+      for (let i = 0; i < csv.length; i += 1) {
+        const char = csv[i];
+        const next = csv[i + 1];
+        if (char === '"' && next === '"') {
+          current += '"';
+          i += 1;
+        } else if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === "," && !inQuotes) {
+          row.push(current.trim());
+          current = "";
+        } else if ((char === "\n" || char === "\r") && !inQuotes) {
+          if (char === "\r" && next === "\n") i += 1;
+          row.push(current.trim());
+          if (row.some(Boolean)) rows.push(row);
+          row = [];
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+
+      row.push(current.trim());
+      if (row.some(Boolean)) rows.push(row);
+      if (rows.length < 2) return [];
+
+      const headers = rows[0].map((header) => normalize(header));
+      return rows.slice(1).map((cells) => {
+        const item = {};
+        headers.forEach((header, index) => {
+          item[header] = cells[index] || "";
+        });
+        return item;
+      });
+    }
+
+    function normalizeImportedReport(row) {
+      const category = pick(row, ["categoria", "category", "tipo"]) || "General";
+      const client = pick(row, ["cliente", "client", "marca"]) || "Sin cliente";
+      const looker = pick(row, ["looker", "lookerstudio", "data studio", "datastudio"]);
+      const zoho = pick(row, ["zoho", "zoho analytics"]);
+      const html = pick(row, ["html", "url", "link", "enlace"]);
+      return createReport(category, client, looker, zoho, html);
+    }
+
+    function pick(row, keys) {
+      for (const key of keys) {
+        if (row[key]) return row[key];
+      }
+      return "";
+    }
+
+    function renderLinkButtons(links = [], firstPrimary = false) {
+      if (!links.length) return `<span class="tag">Sin enlace</span>`;
+      return links.map((link, index) => {
+        const primary = firstPrimary && index === 0 ? " class=\"primary\"" : "";
+        return `<a${primary} href="${escapeAttribute(link.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}</a>`;
+      }).join("");
+    }
+
+    function coverageLabel(priority) {
+      const labels = {
+        Alta: "3 fuentes",
+        Media: "2 fuentes",
+        Base: "1 fuente"
+      };
+      return labels[priority] || priority || "Sin fuente";
+    }
+
+    function formatDate(date) {
+      if (!date) return "Sin fecha";
+      const parsed = new Date(`${date}T00:00:00`);
+      if (Number.isNaN(parsed.getTime())) return date;
+      return parsed.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "2-digit" });
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value).replace(/`/g, "&#096;");
+    }
+
+    init();
+  </script>
+</body>
+</html>
