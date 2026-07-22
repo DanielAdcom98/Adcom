@@ -16,7 +16,7 @@ document.querySelectorAll('.table-block').forEach((block)=>{
   const search=document.createElement('input'); search.type='search'; search.placeholder='Buscar en la tabla…'; search.setAttribute('aria-label','Buscar en la tabla'); tools.appendChild(search);
   const filters=[];
   headers.forEach((label,index)=>{
-    if(label==='Análisis') return;
+    if(!['Etapa','Objetivo'].includes(label)) return;
     const values=[...new Set(rows.map(r=>r.cells[index].textContent.trim()))].filter(Boolean);
     if(values.length<2 || values.length>20) return;
     const select=document.createElement('select'); select.setAttribute('aria-label','Filtrar por '+label);
